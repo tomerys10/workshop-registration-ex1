@@ -77,17 +77,15 @@ they are and are never modified.
 
 ### Model classes (`patmal.workshops.model.impl`)
 
-- `PersonBase` - abstract base for instructors and students. Holds the `id`,
-  `name` and `email` every person has. The fields are `final`, because a
-  person's identity never changes after creation.
-- `InstructorImpl` - an instructor and the list of workshops they teach.
+- `InstructorImpl` - an instructor: the personal details (`id`, `name`,
+  `email`) every person has, and the list of workshops they teach.
 - `WorkshopImpl` - a workshop with a system-assigned id, a name, a description
   and its instructor (`null` until the workshop is associated with one).
 - `TeamImpl` - a team with a system-assigned id, a name, its workshop and its
   list of students.
-- `StudentImpl` - a student. The only thing a student stores beyond its
-  personal details is a reference to its team (`null` for a free student).
-  Everything else is derived from that team:
+- `StudentImpl` - a student. Besides the personal details (`id`, `name`,
+  `email`), the only thing a student stores is a reference to its team
+  (`null` for a free student). Everything else is derived from that team:
   - `getTeamName()` - the name of the team
   - `getInstructor()` - team, then workshop, then instructor
   - `getTeamMates()` - the team members without the student himself/herself
