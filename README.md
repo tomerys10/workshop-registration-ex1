@@ -100,9 +100,8 @@ they are and are never modified.
 ## Design notes
 
 - **Maps keyed by id.** Instructors, students, workshops and teams are kept in
-  `LinkedHashMap`s keyed by their ids, so every lookup by id is fast.
-  `LinkedHashMap` also keeps the creation order, which makes the returned
-  lists predictable and easier to debug (the API does not require any order).
+  `HashMap`s keyed by their ids, so every lookup by id is fast. The API does
+  not require any order for the returned lists.
 - **Running ids.** Workshop and team ids are running numbers starting from 1,
   each kind with its own counter. A counter is advanced only after an
   operation has fully succeeded, so a rejected operation never consumes an id.

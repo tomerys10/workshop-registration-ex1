@@ -11,8 +11,8 @@ import patmal.workshops.model.impl.TeamImpl;
 import patmal.workshops.model.impl.WorkshopImpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,10 +31,10 @@ import java.util.Set;
  */
 public class WorkshopSystemImpl implements WorkshopSystem {
 
-    private final Map<String, InstructorImpl> instructors = new LinkedHashMap<>();
-    private final Map<String, StudentImpl> students = new LinkedHashMap<>();
-    private final Map<Integer, WorkshopImpl> workshops = new LinkedHashMap<>();
-    private final Map<Integer, TeamImpl> teams = new LinkedHashMap<>();
+    private final Map<String, InstructorImpl> instructors = new HashMap<>();
+    private final Map<String, StudentImpl> students = new HashMap<>();
+    private final Map<Integer, WorkshopImpl> workshops = new HashMap<>();
+    private final Map<Integer, TeamImpl> teams = new HashMap<>();
 
     private int nextWorkshopId = 1;
     private int nextTeamId = 1;
