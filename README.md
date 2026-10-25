@@ -1,175 +1,173 @@
-# Workshop Registration System – Exercise 1 (Vanilla Java)
+# Workshop Registration System (EX1 - Vanilla)
 
-An in-memory core implementation of the **Workshop Registration System**, developed in plain Vanilla Java (JDK 25) against the provided `model` and `logic` API interfaces.
+An in-memory implementation of the workshop registration API: instructors,
+workshops, students and the teams students form to take part in a workshop.
 
-No build tools (Maven / Gradle) and no frameworks are used – only the standard JDK (`javac`, `jar`, `java`).
+Plain vanilla Java (JDK 25). No Maven, no frameworks.
 
----
+![Workshop Registration System](docs/workshop-diagram.jpg)
 
-## 1. Overview & Architecture
+## What the system does
 
-The system manages registrations for academic/training workshops. It tracks **Instructors**, the **Workshops** they teach, **Students**, and the **Teams** formed by students to participate in workshops.
+The system is a small registry that lives entirely in memory. There is no
+database and no user interface: everything is created and queried through
+Java calls on a single `WorkshopSystem` object.
+
+It keeps track of four kinds of objects:
+
+- **Instructor** - a person who teaches workshops. An instructor may teach
+  several workshops, or none yet.
+- **Workshop** - a course given by an instructor. Teams register to it.
+- **Team** - a group of students that take a specific workshop together.
+- **Student** - a person who takes part in a workshop as a member of a team.
+  A student belongs to at most one team. A student who is not in any team is
+  called a *free student*.
+
+The relations between them:
 
 ```text
-Instructor 1 ──── * Workshop 1 ──── * Team 1 ──── 1..* Student
+Instructor 1 ---- * Workshop 1 ---- * Team 1 ---- 1..* Student
 ```
 
-* An instructor teaches zero or more workshops.
-* A workshop belongs to at most one instructor and hosts any number of teams.
-* A team belongs to exactly one workshop and contains one or more students.
-* A student belongs to at most one team. A student without a team is a **free student**.
+Because a team belongs to a workshop and a workshop belongs to an instructor,
+the system can tell, for every student, which team they are in, who their
+team mates are, and who their instructor is.
 
-Because every team belongs to a workshop and every workshop belongs to an instructor, the system can answer, for any student, which team they are in, who their team mates are, and who their instructor is.
+### Operations
 
-The project strictly separates the provided API interfaces from the concrete implementation and is organized into two main layers under the `patmal.workshops` namespace. The given interfaces are consumed as-is from the API jars and are never modified.
+Creating things:
 
-* **Model Layer (`patmal.workshops.model.impl`)**:
-  * `PersonBase`: Abstract base class encapsulating common identifying attributes (`id`, `name`, `email`) for all persons in the system. The fields are `final`, since a person's identity never changes after creation.
-  * `InstructorImpl`: Implements `Instructor`. Maintains the collection of workshops taught by the instructor.
-  * `StudentImpl`: Implements `Student`. Holds a reference to the student's `Team` (`null` for free students) and dynamically derives `getTeamName()`, `getInstructor()`, and `getTeamMates()` (excluding the student himself/herself) directly from the associated team and workshop.
-  * `WorkshopImpl`: Implements `Workshop`. Identified by a sequential system-generated ID starting from `1`. Its instructor is `null` until the workshop is associated with one.
-  * `TeamImpl`: Implements `Team`. Identified by an independent sequential system-generated ID starting from `1`, linking a group of students to a specific workshop.
+| Method | What it does |
+|---|---|
+| `createInstructor(id, name, email)` | Registers a new instructor with a caller-supplied id |
+| `createStudent(id, name, email)` | Registers a new student with a caller-supplied id. The student starts free |
+| `createWorkshop(name, description)` | Creates a workshop and assigns it the next workshop id (1, 2, 3, ...) |
+| `associateWorkshopWithInstructor(instructor, workshop)` | Makes the instructor the teacher of the workshop |
+| `createTeam(name, workshop, memberIds)` | Creates a team in the workshop, assigns it the next team id (1, 2, 3, ...) and puts the listed students in it |
 
-* **Logic Layer (`patmal.workshops.logic.impl`)**:
-  * `WorkshopSystemImpl`: Implements `WorkshopSystem` and serves as the single entry point and in-memory registry for creating entities, establishing relationships, and querying system state. It is `public` and exposes a `public` no-argument constructor, so the tester can discover and instantiate it automatically from the classpath.
+Querying:
 
-The model layer depends only on the API interfaces. The logic layer depends on the API interfaces and on the model layer. This mirrors the two-module structure recommended by the exercise, and keeps the door open for future evolution of the project (e.g. replacing the in-memory registry with persistent storage without touching the model).
+| Method | What it returns |
+|---|---|
+| `getInstructors()` / `getInstructor(id)` | All instructors / one instructor by id |
+| `getStudents()` / `getStudent(id)` | All students / one student by id |
+| `getWorkshops()` / `getWorkshop(id)` | All workshops / one workshop by id |
+| `getTeams()` / `getTeam(id)` | All teams / one team by id |
+| `getFreeStudents()` | All students that are not in any team |
+| `getStudentsOfInstructor(id)` | All students in a team of any workshop taught by that instructor |
+| `getStudentsOfWorkshop(id)` | All students in a team of that workshop |
 
----
+Every student can also answer questions about itself: `getTeamName()`,
+`getInstructor()` and `getTeamMates()` (the other members of the team, never
+the student himself/herself). For a free student these return `null`, `null`
+and an empty list.
 
-## 2. Key Design Decisions & Considerations
+## Structure
 
-### 2.1 Data Structures & Lookup Efficiency
+| Folder | Content |
+|---|---|
+| `model-impl` | Implementations of the model interfaces (`Person`, `Instructor`, `Student`, `Workshop`, `Team`) |
+| `logic-impl` | Implementation of `WorkshopSystem` (the single entry point) |
+| `lib` | The given API jars (`model-1.0.jar`, `logic-1.0.jar`) |
+| `artifacts` | The built implementation jars |
+| `docs` | Images used by this README |
 
-* Entities (`Instructor`, `Student`, `Workshop`, `Team`) are stored in four `LinkedHashMap` instances keyed by their unique IDs (`String` for persons, `Integer` for workshops and teams).
-* This provides $O(1)$ lookup by ID, which is the most frequent operation in the system (every `getX(id)` call and every member of a `createTeam` request).
-* `LinkedHashMap` was chosen over `HashMap` to preserve insertion order. The API states that the order of returned lists is not important, but deterministic ordering makes the output predictable and debugging considerably easier.
+The project is split into two modules, as recommended by the exercise. The
+model module depends only on the API interfaces; the logic module depends on
+the API interfaces and on the model module. The given interfaces are used as
+they are and are never modified.
 
-### 2.2 Identifiers
+### Model classes (`patmal.workshops.model.impl`)
 
-* **Instructor and student IDs** are supplied by the caller and must be unique within their kind. Uniqueness is enforced on creation; a duplicate ID is rejected with an `IllegalArgumentException`.
-* **Workshop and team IDs** are assigned by the system from two independent counters (`nextWorkshopId`, `nextTeamId`), both starting from `1` and incremented in creation order.
-* A counter is incremented **only after** an operation has fully succeeded. A rejected operation therefore never consumes an ID, and the next successful creation receives the next number in the sequence.
+- `PersonBase` - abstract base for instructors and students. Holds the `id`,
+  `name` and `email` every person has. The fields are `final`, because a
+  person's identity never changes after creation.
+- `InstructorImpl` - an instructor and the list of workshops they teach.
+- `WorkshopImpl` - a workshop with a system-assigned id, a name, a description
+  and its instructor (`null` until the workshop is associated with one).
+- `TeamImpl` - a team with a system-assigned id, a name, its workshop and its
+  list of students.
+- `StudentImpl` - a student. The only thing a student stores beyond its
+  personal details is a reference to its team (`null` for a free student).
+  Everything else is derived from that team:
+  - `getTeamName()` - the name of the team
+  - `getInstructor()` - team, then workshop, then instructor
+  - `getTeamMates()` - the team members without the student himself/herself
 
-### 2.3 Atomicity & Two-Phase Validation
+### Logic class (`patmal.workshops.logic.impl`)
 
-* Every mutating operation that can fail (`createInstructor`, `createStudent`, `createTeam`) validates all preconditions *before* modifying any system state or incrementing internal ID counters.
-* `createTeam` is the most delicate operation and is explicitly split into two phases:
-  1. **Validation phase** – every member ID is checked for:
-     * **existence** – the student must be registered in the system;
-     * **uniqueness within the request** – the same ID may not appear twice (tracked with a `HashSet`);
-     * **availability** – the student must currently be a free student.
+- `WorkshopSystemImpl` - the single entry point. It is `public` and has a
+  `public` no-argument constructor, so the tester can find it on the
+  classpath and create it automatically. It holds all the objects, creates
+  them, connects them and answers the queries.
 
-     The resolved students are collected into a temporary list; nothing in the system is touched yet.
-  2. **Commit phase** – only when every member passed validation is the team created, its students linked, the team registered, and the team counter advanced.
-* If any check fails, an `IllegalArgumentException` with a descriptive message is thrown during the validation phase, leaving all existing entities and sequential ID counters completely untouched. For example, `createTeam("X", w, ["s7", "s99"])` where `s99` does not exist leaves `s7` a free student, exactly as before the call.
+## Design notes
 
-### 2.4 Bidirectional Relationship Consistency
+- **Maps keyed by id.** Instructors, students, workshops and teams are kept in
+  `LinkedHashMap`s keyed by their ids, so every lookup by id is fast.
+  `LinkedHashMap` also keeps the creation order, which makes the returned
+  lists predictable and easier to debug (the API does not require any order).
+- **Running ids.** Workshop and team ids are running numbers starting from 1,
+  each kind with its own counter. A counter is advanced only after an
+  operation has fully succeeded, so a rejected operation never consumes an id.
+- **Validate first, then change.** Every request is fully validated before any
+  state changes, so a rejected operation leaves the system (data and id
+  counters) exactly as it was. In `createTeam`, all member ids are checked
+  first: each one must exist, must not appear twice in the request, and must
+  belong to a free student. Only when every member passes is the team created.
+  For example, `createTeam` with `["s7", "s99"]`, where `s99` does not exist,
+  is rejected and `s7` stays a free student.
+- **Both sides of every relation stay consistent.** Associating a workshop with
+  an instructor updates the workshop and the instructor's list of workshops.
+  If the workshop already had another instructor, it is removed from that
+  instructor's list first. Creating a team updates both the team's list of
+  students and each student's team.
+- **Derived data instead of copies.** A student does not store its team name,
+  instructor or team mates; they are computed from its team every time. Each
+  fact is stored in one place only, so it can never get out of sync. For
+  example, if a workshop is associated with an instructor after its teams were
+  formed, its students immediately report the right instructor.
+- **Defensive copies.** All returned lists are copies of the internal state,
+  so callers cannot change the system by modifying a list they received.
+  Returned lists are never `null` and never contain the same object twice.
+- **Unknown keys.** `getX(id)` returns `null` and `getStudentsOfX(id)` returns
+  an empty list. The API leaves this choice open; it is applied consistently
+  and documented in `WorkshopSystemImpl`.
 
-Every relation in the model is navigable from both sides, so both sides must always agree.
+### Invalid operations
 
-* **Instructor ↔ Workshop**: `associateWorkshopWithInstructor` updates both `WorkshopImpl#setInstructor` and `InstructorImpl#addWorkshop`. If a workshop was previously associated with another instructor, it is cleanly detached from the previous instructor first, so a workshop never appears in two instructors' lists.
-* **Team ↔ Student**: `createTeam` updates both `TeamImpl#addStudent` and `StudentImpl#setTeam`.
-* **Derived Student State**: Rather than caching redundant fields on `StudentImpl`, student properties (`teamName`, `instructor`, `teamMates`) are computed on the fly from the single `Team` reference:
-  * `getTeamName()` → `team.getName()`
-  * `getInstructor()` → `team.getWorkshop().getInstructor()`
-  * `getTeamMates()` → `team.getStudents()` without the student himself/herself
-
-  Each fact is stored in exactly one place, which guarantees zero state-synchronization bugs as the system evolves. For instance, when a workshop is associated with an instructor *after* teams were already formed, every student of that workshop immediately reports the correct instructor with no extra bookkeeping.
-* Mutators such as `addWorkshop` and `addStudent` ignore an object that is already present, so internal lists never contain the same object twice.
-
-### 2.5 Encapsulation & Defensive Copying
-
-* All methods returning collections (`getWorkshops()`, `getStudents()`, `getTeamMates()`, and all system-level queries) return fresh defensive copies (`new ArrayList<>(...)`), preventing external callers from mutating internal collections.
-* Returned lists are never `null` – an empty result is always an empty list.
-* Mutating methods on model classes (`setInstructor`, `addWorkshop`, `addStudent`, `setTeam`) are intended to be called only by the logic layer, which is responsible for keeping both sides of every relation consistent.
-
-### 2.6 Derived Queries
-
-* `getFreeStudents()` returns every student whose team reference is `null`.
-* `getStudentsOfWorkshop(id)` collects the students of every team whose workshop is the requested one.
-* `getStudentsOfInstructor(id)` collects the students of every team whose workshop is taught by the requested instructor. An instructor who teaches several workshops therefore receives the students of all of them, and since a student belongs to at most one team, no student is ever reported twice.
-
-### 2.7 Unknown Keys Policy (Section 3.3)
-
-The API leaves the behaviour for unknown IDs open, as long as it is consistent and documented. The chosen policy is:
-
-* Single-entity lookups by an unknown ID (`getInstructor(id)`, `getStudent(id)`, `getWorkshop(id)`, `getTeam(id)`) consistently return `null`.
-* Collection queries by an unknown ID (`getStudentsOfInstructor(id)`, `getStudentsOfWorkshop(id)`) consistently return an empty list (`[]`).
-
-This keeps lookups cheap and side-effect free, and keeps collection queries safe to iterate without a `null` check. The policy is also documented in the Javadoc of `WorkshopSystemImpl`.
-
-### 2.8 Invalid Operations
-
-The following operations are rejected by throwing an `IllegalArgumentException`:
+These operations are rejected with an `IllegalArgumentException`:
 
 | Operation | Rejected when |
 |---|---|
-| `createInstructor` | an instructor with the same ID already exists |
-| `createStudent` | a student with the same ID already exists |
-| `createTeam` | a listed student ID does not exist |
-| `createTeam` | a listed student is already in another team |
-| `createTeam` | the same student is listed twice |
+| `createInstructor` | An instructor with the same id already exists |
+| `createStudent` | A student with the same id already exists |
+| `createTeam` | A listed student id does not exist |
+| `createTeam` | A listed student is already in another team |
+| `createTeam` | The same student is listed twice |
 
----
-
-## 3. Repository Structure
-
-```text
-.
-├── artifacts/                  # Compiled implementation JARs for automated grading
-│   ├── model-impl-1.0.jar
-│   └── logic-impl-1.0.jar
-├── lib/                        # Provided API JARs (interfaces only)
-│   ├── model-1.0.jar
-│   └── logic-1.0.jar
-├── model-impl/                 # Model implementation module (patmal.workshops.model.impl)
-│   └── src/patmal/workshops/model/impl/
-│       ├── PersonBase.java
-│       ├── InstructorImpl.java
-│       ├── StudentImpl.java
-│       ├── WorkshopImpl.java
-│       └── TeamImpl.java
-├── logic-impl/                 # Logic implementation module (patmal.workshops.logic.impl)
-│   └── src/patmal/workshops/logic/impl/
-│       └── WorkshopSystemImpl.java
-├── build.ps1                   # Compiles both modules and packages the JARs into artifacts/
-└── README.md
-```
-
----
-
-## 4. Building
-
-Requirements: JDK 25 with `javac` and `jar` on the `PATH`.
+## Build
 
 ```powershell
 .\build.ps1
 ```
 
-The script:
+This compiles both modules and packages `artifacts\model-impl-1.0.jar` and
+`artifacts\logic-impl-1.0.jar`. The model module is compiled first, because
+the logic module depends on it.
 
-1. compiles `model-impl` against the API jars;
-2. compiles `logic-impl` against the API jars and the compiled model classes;
-3. packages each module into its own jar: `artifacts\model-impl-1.0.jar` and `artifacts\logic-impl-1.0.jar`.
+## Run the tester
 
-The modules are compiled in this order because the logic layer depends on the model layer.
-
----
-
-## 5. Running the Tester
-
-The tester (`workshop-tester.jar`) is a black-box program that knows only the API. It searches the classpath for exactly one public, concrete implementation of `WorkshopSystem` with a public no-argument constructor, creates a fresh instance for every flow, and compares the results with the expected ones.
-
-Run from the repository root, with `workshop-tester.jar` placed next to it (on Windows, classpath entries are separated with `;`):
+From the folder that holds `workshop-tester.jar`:
 
 ```powershell
 java -cp "workshop-tester.jar;lib\logic-1.0.jar;lib\model-1.0.jar;artifacts\model-impl-1.0.jar;artifacts\logic-impl-1.0.jar" patmal.workshops.main.Main
 ```
 
-### Result
-
-All nine flows pass:
+The tester knows only the API. It finds the implementation on the classpath,
+creates a fresh `WorkshopSystem` for every flow, fills it with the same
+reference data (3 instructors, 4 workshops, 8 students, 3 teams) and checks
+nine flows:
 
 | # | Flow | Checks |
 |---|---|---|
@@ -183,16 +181,4 @@ All nine flows pass:
 | 8 | Invalid operations are rejected and leave the system intact | 13/13 |
 | 9 | System evolves: new team, workshop, student | 25/25 |
 
-```text
-Scenarios: 9 passed, 0 failed
-Checks:    105 passed, 0 failed
-RESULT: ALL OK
-```
-
----
-
-## 6. Submission
-
-* The repository is public.
-* The implementation jars are located in the `artifacts` folder at the repository root.
-* The submitted commit is tagged `EX1-Vanilla`.
+Expected output ends with `RESULT: ALL OK`.
