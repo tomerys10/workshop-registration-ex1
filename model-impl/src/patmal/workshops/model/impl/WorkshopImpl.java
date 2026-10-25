@@ -3,11 +3,6 @@ package patmal.workshops.model.impl;
 import patmal.workshops.api.model.Instructor;
 import patmal.workshops.api.model.Workshop;
 
-/**
- * A workshop that teams register to.
- * The id is assigned by the system (a running number starting from 1).
- * The instructor is null until the workshop is associated with one.
- */
 public class WorkshopImpl implements Workshop {
 
     private final Integer id;
@@ -41,10 +36,6 @@ public class WorkshopImpl implements Workshop {
         return instructor;
     }
 
-    /**
-     * Sets the instructor that teaches this workshop.
-     * Called by the logic layer, which also updates the instructor side of the relation.
-     */
     public void setInstructor(Instructor instructor) {
         this.instructor = instructor;
     }
