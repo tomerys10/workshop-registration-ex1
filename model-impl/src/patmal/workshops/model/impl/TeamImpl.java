@@ -7,10 +7,6 @@ import patmal.workshops.api.model.Workshop;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A group of students that take a specific workshop together.
- * The id is assigned by the system (a running number starting from 1).
- */
 public class TeamImpl implements Team {
 
     private final Integer id;
@@ -36,7 +32,6 @@ public class TeamImpl implements Team {
 
     @Override
     public List<Student> getStudents() {
-        // Defensive copy so callers cannot modify the internal state.
         return new ArrayList<>(students);
     }
 
@@ -45,10 +40,6 @@ public class TeamImpl implements Team {
         return workshop;
     }
 
-    /**
-     * Adds a student to this team.
-     * Called by the logic layer, which also updates the student side of the relation.
-     */
     public void addStudent(Student student) {
         if (!students.contains(student)) {
             students.add(student);
