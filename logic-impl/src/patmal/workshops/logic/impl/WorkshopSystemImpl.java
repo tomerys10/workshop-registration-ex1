@@ -18,16 +18,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * In-memory implementation of {@link WorkshopSystem}.
- *
- * <p>Data is kept in maps keyed by id. Workshop and team ids are running
- * numbers starting from 1, each kind with its own counter. A rejected
- * operation never consumes an id and leaves the system unchanged: every
- * request is fully validated before any state is modified.</p>
- *
- * <p>Unknown keys policy (section 3.3): lookups of a single object by an
+ * Unknown keys policy (section 3.3): lookups of a single object by an
  * unknown id return {@code null}; list queries for an unknown id return an
- * empty list.</p>
+ * empty list.
  */
 public class WorkshopSystemImpl implements WorkshopSystem {
 
@@ -40,12 +33,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     private int nextTeamId = 1;
 
     public WorkshopSystemImpl() {
-        // Public no-argument constructor, as required by the tester.
     }
-
-    // ------------------------------------------------------------------
-    // Creation
-    // ------------------------------------------------------------------
 
     @Override
     public Instructor createInstructor(String id, String name, String email) {
@@ -80,8 +68,6 @@ public class WorkshopSystemImpl implements WorkshopSystem {
         InstructorImpl instructorImpl = (InstructorImpl) instructor;
         WorkshopImpl workshopImpl = (WorkshopImpl) workshop;
 
-        // Keep both sides of the relation consistent. If the workshop was
-        // previously associated with another instructor, detach it first.
         Instructor previous = workshopImpl.getInstructor();
         if (previous instanceof InstructorImpl && previous != instructorImpl) {
             ((InstructorImpl) previous).removeWorkshop(workshopImpl);
@@ -92,8 +78,6 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Team createTeam(String name, Workshop workshop, List<String> members) {
-        // Validate the whole request before changing anything, so a rejected
-        // operation leaves the system (data and id counters) untouched.
         Set<String> seen = new HashSet<>();
         List<StudentImpl> resolved = new ArrayList<>();
         for (String memberId : members) {
@@ -124,10 +108,6 @@ public class WorkshopSystemImpl implements WorkshopSystem {
         return team;
     }
 
-    // ------------------------------------------------------------------
-    // Queries
-    // ------------------------------------------------------------------
-
     @Override
     public List<Instructor> getInstructors() {
         return new ArrayList<>(instructors.values());
@@ -135,7 +115,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Instructor getInstructor(String id) {
-        return instructors.get(id); // null when unknown (see class doc)
+        return instructors.get(id);
     }
 
     @Override
@@ -145,7 +125,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Student getStudent(String id) {
-        return students.get(id); // null when unknown (see class doc)
+        return students.get(id);
     }
 
     @Override
@@ -155,7 +135,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Workshop getWorkshop(Integer id) {
-        return workshops.get(id); // null when unknown (see class doc)
+        return workshops.get(id);
     }
 
     @Override
@@ -165,7 +145,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Team getTeam(Integer id) {
-        return teams.get(id); // null when unknown (see class doc)
+        return teams.get(id);
     }
 
     @Override
@@ -184,7 +164,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
         List<Student> result = new ArrayList<>();
         InstructorImpl instructor = instructors.get(instructorId);
         if (instructor == null) {
-            return result; // empty list when unknown (see class doc)
+            return result;
         }
         for (TeamImpl team : teams.values()) {
             Workshop workshop = team.getWorkshop();
@@ -200,7 +180,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
         List<Student> result = new ArrayList<>();
         WorkshopImpl workshop = workshops.get(workshopId);
         if (workshop == null) {
-            return result; // empty list when unknown (see class doc)
+            return result;
         }
         for (TeamImpl team : teams.values()) {
             if (team.getWorkshop() == workshop) {
