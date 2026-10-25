@@ -3,8 +3,6 @@
 An in-memory implementation of the workshop registration API: instructors,
 workshops, students and the teams students form to take part in a workshop.
 
-Plain vanilla Java (JDK 25). No Maven, no frameworks.
-
 ![Workshop Registration System](docs/workshop-diagram.jpg)
 
 ## What the system does
@@ -133,52 +131,3 @@ they are and are never modified.
 - **Unknown keys.** `getX(id)` returns `null` and `getStudentsOfX(id)` returns
   an empty list. The API leaves this choice open; it is applied consistently
   and documented in `WorkshopSystemImpl`.
-
-### Invalid operations
-
-These operations are rejected with an `IllegalArgumentException`:
-
-| Operation | Rejected when |
-|---|---|
-| `createInstructor` | An instructor with the same id already exists |
-| `createStudent` | A student with the same id already exists |
-| `createTeam` | A listed student id does not exist |
-| `createTeam` | A listed student is already in another team |
-| `createTeam` | The same student is listed twice |
-
-## Build
-
-```powershell
-.\build.ps1
-```
-
-This compiles both modules and packages `artifacts\model-impl-1.0.jar` and
-`artifacts\logic-impl-1.0.jar`. The model module is compiled first, because
-the logic module depends on it.
-
-## Run the tester
-
-From the folder that holds `workshop-tester.jar`:
-
-```powershell
-java -cp "workshop-tester.jar;lib\logic-1.0.jar;lib\model-1.0.jar;artifacts\model-impl-1.0.jar;artifacts\logic-impl-1.0.jar" patmal.workshops.main.Main
-```
-
-The tester knows only the API. It finds the implementation on the classpath,
-creates a fresh `WorkshopSystem` for every flow, fills it with the same
-reference data (3 instructors, 4 workshops, 8 students, 3 teams) and checks
-nine flows:
-
-| # | Flow | Checks |
-|---|---|---|
-| 1 | Instructors, students, workshops and teams are registered | 23/23 |
-| 2 | Workshops and instructors are associated | 8/8 |
-| 3 | Team composition and derived student data | 20/20 |
-| 4 | Free students | 2/2 |
-| 5 | Students of an instructor | 4/4 |
-| 6 | Students of a workshop | 4/4 |
-| 7 | Unknown keys | 6/6 |
-| 8 | Invalid operations are rejected and leave the system intact | 13/13 |
-| 9 | System evolves: new team, workshop, student | 25/25 |
-
-Expected output ends with `RESULT: ALL OK`.
