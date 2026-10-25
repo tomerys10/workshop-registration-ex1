@@ -13,12 +13,32 @@ import java.util.List;
  * A student without a team is a "free" student: team name and instructor
  * are null and the list of team mates is empty.
  */
-public class StudentImpl extends PersonBase implements Student {
+public class StudentImpl implements Student {
 
+    private final String id;
+    private final String name;
+    private final String email;
     private Team team;
 
     public StudentImpl(String id, String name, String email) {
-        super(id, name, email);
+        this.id = id;
+        this.name = name;
+        this.email = email;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
     }
 
     @Override
@@ -57,5 +77,10 @@ public class StudentImpl extends PersonBase implements Student {
      */
     public void setTeam(Team team) {
         this.team = team;
+    }
+
+    @Override
+    public String toString() {
+        return id;
     }
 }
