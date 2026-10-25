@@ -7,12 +7,6 @@ import patmal.workshops.api.model.Team;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A student. Most of the student's information (team name, instructor,
- * team mates) is derived from the team the student belongs to.
- * A student without a team is a "free" student: team name and instructor
- * are null and the list of team mates is empty.
- */
 public class StudentImpl implements Student {
 
     private final String id;
@@ -60,21 +54,14 @@ public class StudentImpl implements Student {
             return new ArrayList<>();
         }
         List<Student> mates = new ArrayList<>(team.getStudents());
-        mates.remove(this); // the student himself/herself is not a team mate
+        mates.remove(this);
         return mates;
     }
 
-    /**
-     * Returns the team this student belongs to, or null for a free student.
-     */
     public Team getTeam() {
         return team;
     }
 
-    /**
-     * Puts this student in a team.
-     * Called by the logic layer, which also updates the team side of the relation.
-     */
     public void setTeam(Team team) {
         this.team = team;
     }
