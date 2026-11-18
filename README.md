@@ -22,6 +22,25 @@ Then, from the root of the repository:
 mvn clean install
 ```
 
+The build compiles every module, packs the runnable uber jar
+`app/target/workshop-cli.jar` and then runs the tester automatically in the
+`verify` phase (a failing tester fails the build).
+
+Running the application (exports instructors.json, students.json and
+teams.json to the current folder; an optional argument names a students CSV
+file):
+
+```
+java -jar app/target/workshop-cli.jar
+```
+
+Running the tester by hand (from a folder holding both jars; on Linux/macOS
+use `:` instead of `;`):
+
+```
+java -cp "workshop-tester-2.0.jar;workshop-cli.jar" patmal.workshops.main.Main
+```
+
 An in-memory implementation of the workshop registration API: instructors,
 workshops, students and the teams students form to take part in a workshop.
 
@@ -84,20 +103,21 @@ and an empty list.
 
 ## Structure
 
-| Folder | Content |
+| Module | Content |
 |---|---|
-| `model-impl` | Implementations of the model interfaces (`Person`, `Instructor`, `Student`, `Workshop`, `Team`) |
-| `logic-impl` | Implementation of `WorkshopSystem` (the single entry point) |
-| `lib` | The given API jars (`model-1.0.jar`, `logic-1.0.jar`) |
-| `artifacts` | The built implementation jars |
+| `core/model-impl` | Implementations of the model interfaces (`Person`, `Instructor`, `Student`, `Workshop`, `Team`) |
+| `core/logic-impl` | Implementation of `WorkshopSystem`, the domain managers, e-mail validation, JSON export and CSV import |
+| `app` | The command line application (`Main`) and the `workshop-cli.jar` uber jar |
 | `docs` | Images used by this README |
 
-The project is split into two modules, as recommended by the exercise. The
-model module depends only on the API interfaces; the logic module depends on
-the API interfaces and on the model module. The given interfaces are used as
-they are and are never modified.
+`root` is the aggregator and top parent; `core` aggregates and parents the two
+implementation modules. Every dependency version is declared once, in the root
+pom (`properties` + `dependencyManagement`). The model module depends only on
+the API interfaces; the logic module depends on the API interfaces and on the
+model module. The given interfaces are used as they are and are never
+modified.
 
-### Model classes (`patmal.workshops.model.impl`)
+### Model classes (`patmal.workshops.student.impl.model`)
 
 - `InstructorImpl` - an instructor: the personal details (`id`, `name`,
   `email`) every person has, and the list of workshops they teach.
@@ -112,12 +132,17 @@ they are and are never modified.
   - `getInstructor()` - team, then workshop, then instructor
   - `getTeamMates()` - the team members without the student himself/herself
 
-### Logic class (`patmal.workshops.logic.impl`)
+### Logic classes (`patmal.workshops.student.impl.logic`)
 
 - `WorkshopSystemImpl` - the single entry point. It is `public` and has a
   `public` no-argument constructor, so the tester can find it on the
-  classpath and create it automatically. It holds all the objects, creates
-  them, connects them and answers the queries.
+  classpath and create it automatically. It is intentionally thin and
+  delegates every call to the manager that owns the area:
+  `InstructorManager`, `StudentManager`, `WorkshopManager` and `TeamManager`.
+- `Emails` - e-mail validation (commons-validator); an invalid or null
+  address is rejected with `IllegalArgumentException`.
+- `JsonExporter` - the three JSON exports (Jackson).
+- `CsvImporter` - the bonus CSV student import (commons-csv).
 
 ## Design notes
 
