@@ -1,0 +1,48 @@
+package patmal.workshops.student.impl.logic;
+
+import patmal.workshops.api.model.Instructor;
+import patmal.workshops.api.model.Workshop;
+import patmal.workshops.student.impl.model.InstructorImpl;
+import patmal.workshops.student.impl.model.WorkshopImpl;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Owns the workshops: the running id, creation, lookups and the association
+ * between a workshop and its instructor.
+ */
+class WorkshopManager {
+
+    private final Map<Integer, WorkshopImpl> workshops = new LinkedHashMap<>();
+    private int nextWorkshopId = 1;
+
+    Workshop create(String name, String description) {
+        WorkshopImpl workshop = new WorkshopImpl(nextWorkshopId, name, description);
+        workshops.put(nextWorkshopId, workshop);
+        nextWorkshopId++;
+        return workshop;
+    }
+
+    List<Workshop> getAll() {
+        return new ArrayList<>(workshops.values());
+    }
+
+    WorkshopImpl byId(Integer id) {
+        return workshops.get(id);
+    }
+
+    void associateWithInstructor(Instructor instructor, Workshop workshop) {
+        InstructorImpl instructorImpl = (InstructorImpl) instructor;
+        WorkshopImpl workshopImpl = (WorkshopImpl) workshop;
+
+        Instructor previous = workshopImpl.getInstructor();
+        if (previous instanceof InstructorImpl && previous != instructorImpl) {
+            ((InstructorImpl) previous).removeWorkshop(workshopImpl);
+        }
+        workshopImpl.setInstructor(instructorImpl);
+        instructorImpl.addWorkshop(workshopImpl);
+    }
+}

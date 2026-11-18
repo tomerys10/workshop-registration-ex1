@@ -5,185 +5,103 @@ import patmal.workshops.api.model.Instructor;
 import patmal.workshops.api.model.Student;
 import patmal.workshops.api.model.Team;
 import patmal.workshops.api.model.Workshop;
-import patmal.workshops.student.impl.model.InstructorImpl;
-import patmal.workshops.student.impl.model.StudentImpl;
-import patmal.workshops.student.impl.model.TeamImpl;
-import patmal.workshops.student.impl.model.WorkshopImpl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
+/**
+ * The single entry point of the system. It is intentionally thin: every call
+ * is delegated to the manager that owns the area (instructors, students,
+ * workshops or teams).
+ */
 public class WorkshopSystemImpl implements WorkshopSystem {
 
-    private final Map<String, InstructorImpl> instructors = new HashMap<>();
-    private final Map<String, StudentImpl> students = new HashMap<>();
-    private final Map<Integer, WorkshopImpl> workshops = new HashMap<>();
-    private final Map<Integer, TeamImpl> teams = new HashMap<>();
-
-    private int nextWorkshopId = 1;
-    private int nextTeamId = 1;
+    private final InstructorManager instructorManager = new InstructorManager();
+    private final StudentManager studentManager = new StudentManager();
+    private final WorkshopManager workshopManager = new WorkshopManager();
+    private final TeamManager teamManager = new TeamManager(studentManager);
 
     public WorkshopSystemImpl() {
     }
 
     @Override
     public Instructor createInstructor(String id, String name, String email) {
-        if (instructors.containsKey(id)) {
-            throw new IllegalArgumentException("An instructor with id '" + id + "' already exists");
-        }
-        InstructorImpl instructor = new InstructorImpl(id, name, email);
-        instructors.put(id, instructor);
-        return instructor;
+        return instructorManager.create(id, name, email);
     }
 
     @Override
     public Student createStudent(String id, String name, String email) {
-        if (students.containsKey(id)) {
-            throw new IllegalArgumentException("A student with id '" + id + "' already exists");
-        }
-        StudentImpl student = new StudentImpl(id, name, email);
-        students.put(id, student);
-        return student;
+        return studentManager.create(id, name, email);
     }
 
     @Override
     public Workshop createWorkshop(String name, String description) {
-        WorkshopImpl workshop = new WorkshopImpl(nextWorkshopId, name, description);
-        workshops.put(nextWorkshopId, workshop);
-        nextWorkshopId++;
-        return workshop;
+        return workshopManager.create(name, description);
     }
 
     @Override
     public void associateWorkshopWithInstructor(Instructor instructor, Workshop workshop) {
-        InstructorImpl instructorImpl = (InstructorImpl) instructor;
-        WorkshopImpl workshopImpl = (WorkshopImpl) workshop;
-
-        Instructor previous = workshopImpl.getInstructor();
-        if (previous instanceof InstructorImpl && previous != instructorImpl) {
-            ((InstructorImpl) previous).removeWorkshop(workshopImpl);
-        }
-        workshopImpl.setInstructor(instructorImpl);
-        instructorImpl.addWorkshop(workshopImpl);
+        workshopManager.associateWithInstructor(instructor, workshop);
     }
 
     @Override
     public Team createTeam(String name, Workshop workshop, List<String> members) {
-        Set<String> seen = new HashSet<>();
-        List<StudentImpl> resolved = new ArrayList<>();
-        for (String memberId : members) {
-            if (!seen.add(memberId)) {
-                throw new IllegalArgumentException(
-                        "Student '" + memberId + "' is listed more than once");
-            }
-            StudentImpl student = students.get(memberId);
-            if (student == null) {
-                throw new IllegalArgumentException(
-                        "Student '" + memberId + "' does not exist");
-            }
-            if (student.getTeam() != null) {
-                throw new IllegalArgumentException(
-                        "Student '" + memberId + "' is already in team '"
-                                + student.getTeam().getName() + "'");
-            }
-            resolved.add(student);
-        }
-
-        TeamImpl team = new TeamImpl(nextTeamId, name, workshop);
-        for (StudentImpl student : resolved) {
-            team.addStudent(student);
-            student.setTeam(team);
-        }
-        teams.put(nextTeamId, team);
-        nextTeamId++;
-        return team;
+        return teamManager.create(name, workshop, members);
     }
 
     @Override
     public List<Instructor> getInstructors() {
-        return new ArrayList<>(instructors.values());
+        return instructorManager.getAll();
     }
 
     @Override
     public Instructor getInstructor(String id) {
-        return instructors.get(id);
+        return instructorManager.byId(id);
     }
 
     @Override
     public List<Student> getStudents() {
-        return new ArrayList<>(students.values());
+        return studentManager.getAll();
     }
 
     @Override
     public Student getStudent(String id) {
-        return students.get(id);
+        return studentManager.byId(id);
     }
 
     @Override
     public List<Workshop> getWorkshops() {
-        return new ArrayList<>(workshops.values());
+        return workshopManager.getAll();
     }
 
     @Override
     public Workshop getWorkshop(Integer id) {
-        return workshops.get(id);
+        return workshopManager.byId(id);
     }
 
     @Override
     public List<Team> getTeams() {
-        return new ArrayList<>(teams.values());
+        return teamManager.getAll();
     }
 
     @Override
     public Team getTeam(Integer id) {
-        return teams.get(id);
+        return teamManager.byId(id);
     }
 
     @Override
     public List<Student> getFreeStudents() {
-        List<Student> free = new ArrayList<>();
-        for (StudentImpl student : students.values()) {
-            if (student.getTeam() == null) {
-                free.add(student);
-            }
-        }
-        return free;
+        return studentManager.getFree();
     }
 
     @Override
     public List<Student> getStudentsOfInstructor(String instructorId) {
-        List<Student> result = new ArrayList<>();
-        InstructorImpl instructor = instructors.get(instructorId);
-        if (instructor == null) {
-            return result;
-        }
-        for (TeamImpl team : teams.values()) {
-            Workshop workshop = team.getWorkshop();
-            if (workshop != null && workshop.getInstructor() == instructor) {
-                result.addAll(team.getStudents());
-            }
-        }
-        return result;
+        return teamManager.getStudentsOfInstructor(instructorManager.byId(instructorId));
     }
 
     @Override
     public List<Student> getStudentsOfWorkshop(Integer workshopId) {
-        List<Student> result = new ArrayList<>();
-        WorkshopImpl workshop = workshops.get(workshopId);
-        if (workshop == null) {
-            return result;
-        }
-        for (TeamImpl team : teams.values()) {
-            if (workshop.equals(team.getWorkshop())) {
-                result.addAll(team.getStudents());
-            }
-        }
-        return result;
+        return teamManager.getStudentsOfWorkshop(workshopManager.byId(workshopId));
     }
 
     @Override
