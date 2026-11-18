@@ -21,6 +21,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     private final WorkshopManager workshopManager = new WorkshopManager();
     private final TeamManager teamManager = new TeamManager(studentManager);
     private final JsonExporter jsonExporter = new JsonExporter(instructorManager, studentManager, teamManager);
+    private final CsvImporter csvImporter = new CsvImporter(studentManager);
 
     public WorkshopSystemImpl() {
     }
@@ -118,5 +119,10 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     @Override
     public void exportTeamsDataToJson(File targetFileName) {
         jsonExporter.exportTeams(targetFileName);
+    }
+
+    @Override
+    public List<Student> importStudentDataFromFile(File source) {
+        return csvImporter.importStudents(source);
     }
 }
