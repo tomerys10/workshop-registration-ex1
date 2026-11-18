@@ -17,11 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Unknown keys policy (section 3.3): lookups of a single object by an
- * unknown id return {@code null}; list queries for an unknown id return an
- * empty list.
- */
+
 public class WorkshopSystemImpl implements WorkshopSystem {
 
     private final Map<String, InstructorImpl> instructors = new HashMap<>();
@@ -77,7 +73,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     }
 
     @Override
-    public Team createTeam(String name, Workshop workshop, List<String> members) {
+    public Team  createTeam(String name, Workshop workshop, List<String> members) {
         Set<String> seen = new HashSet<>();
         List<StudentImpl> resolved = new ArrayList<>();
         for (String memberId : members) {
@@ -183,7 +179,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
             return result;
         }
         for (TeamImpl team : teams.values()) {
-            if (team.getWorkshop() == workshop) {
+            if (workshop.equals(team.getWorkshop())) {
                 result.addAll(team.getStudents());
             }
         }

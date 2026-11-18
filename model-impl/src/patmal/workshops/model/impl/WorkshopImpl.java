@@ -3,6 +3,8 @@ package patmal.workshops.model.impl;
 import patmal.workshops.api.model.Instructor;
 import patmal.workshops.api.model.Workshop;
 
+import java.util.Objects;
+
 public class WorkshopImpl implements Workshop {
 
     private final Integer id;
@@ -38,6 +40,22 @@ public class WorkshopImpl implements Workshop {
 
     public void setInstructor(Instructor instructor) {
         this.instructor = instructor;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof WorkshopImpl workshop)) {
+            return false;
+        }
+        return Objects.equals(id, workshop.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 
     @Override
