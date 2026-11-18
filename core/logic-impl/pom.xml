@@ -11,4 +11,20 @@
     </parent>
 
     <artifactId>logic-impl</artifactId>
+
+    <dependencies>
+        <!-- The logic API uses the model interfaces, so both are needed -->
+        <dependency>
+            <groupId>patmal.workshops</groupId>
+            <artifactId>logic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>patmal.workshops</groupId>
+            <artifactId>model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>patmal.workshops.student.impl</groupId>
+            <artifactId>model-impl</artifactId>
+        </dependency>
+    </dependencies>
 </project>

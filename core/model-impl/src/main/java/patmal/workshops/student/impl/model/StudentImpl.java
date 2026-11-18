@@ -1,4 +1,4 @@
-package patmal.workshops.model.impl;
+package patmal.workshops.student.impl.model;
 
 import patmal.workshops.api.model.Instructor;
 import patmal.workshops.api.model.Student;
@@ -7,32 +7,12 @@ import patmal.workshops.api.model.Team;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StudentImpl implements Student {
+public class StudentImpl extends PersonBase implements Student {
 
-    private final String id;
-    private final String name;
-    private final String email;
     private Team team;
 
     public StudentImpl(String id, String name, String email) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getEmail() {
-        return email;
+        super(id, name, email);
     }
 
     @Override
@@ -68,6 +48,6 @@ public class StudentImpl implements Student {
 
     @Override
     public String toString() {
-        return id;
+        return getId();
     }
 }

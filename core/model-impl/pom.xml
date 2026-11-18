@@ -11,4 +11,11 @@
     </parent>
 
     <artifactId>model-impl</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>patmal.workshops</groupId>
+            <artifactId>model</artifactId>
+        </dependency>
+    </dependencies>
 </project>

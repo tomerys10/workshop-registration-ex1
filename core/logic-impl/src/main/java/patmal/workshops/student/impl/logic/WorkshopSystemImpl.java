@@ -1,22 +1,22 @@
-package patmal.workshops.logic.impl;
+package patmal.workshops.student.impl.logic;
 
 import patmal.workshops.api.logic.WorkshopSystem;
 import patmal.workshops.api.model.Instructor;
 import patmal.workshops.api.model.Student;
 import patmal.workshops.api.model.Team;
 import patmal.workshops.api.model.Workshop;
-import patmal.workshops.model.impl.InstructorImpl;
-import patmal.workshops.model.impl.StudentImpl;
-import patmal.workshops.model.impl.TeamImpl;
-import patmal.workshops.model.impl.WorkshopImpl;
+import patmal.workshops.student.impl.model.InstructorImpl;
+import patmal.workshops.student.impl.model.StudentImpl;
+import patmal.workshops.student.impl.model.TeamImpl;
+import patmal.workshops.student.impl.model.WorkshopImpl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 
 public class WorkshopSystemImpl implements WorkshopSystem {
 
@@ -73,7 +73,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     }
 
     @Override
-    public Team  createTeam(String name, Workshop workshop, List<String> members) {
+    public Team createTeam(String name, Workshop workshop, List<String> members) {
         Set<String> seen = new HashSet<>();
         List<StudentImpl> resolved = new ArrayList<>();
         for (String memberId : members) {
@@ -184,5 +184,20 @@ public class WorkshopSystemImpl implements WorkshopSystem {
             }
         }
         return result;
+    }
+
+    @Override
+    public void exportInstructorsDataToJson(File targetFileName) {
+        throw new UnsupportedOperationException("JSON export is implemented in a later commit");
+    }
+
+    @Override
+    public void exportStudentsDataToJson(File targetFileName) {
+        throw new UnsupportedOperationException("JSON export is implemented in a later commit");
+    }
+
+    @Override
+    public void exportTeamsDataToJson(File targetFileName) {
+        throw new UnsupportedOperationException("JSON export is implemented in a later commit");
     }
 }
