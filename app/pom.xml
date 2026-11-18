@@ -23,6 +23,12 @@
             <artifactId>log4j-core</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- Needed by the build (verify phase) but never packed into the uber jar -->
+        <dependency>
+            <groupId>patmal.workshops</groupId>
+            <artifactId>workshop-tester</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -48,6 +54,28 @@
                                     </manifestEntries>
                                 </transformer>
                             </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>run-tester</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-cp</argument>
+                                <argument>${project.build.directory}/workshop-cli.jar${path.separator}${settings.localRepository}/patmal/workshops/workshop-tester/${tester.version}/workshop-tester-${tester.version}.jar</argument>
+                                <argument>patmal.workshops.main.Main</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>
