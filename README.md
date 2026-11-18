@@ -101,6 +101,55 @@ Every student can also answer questions about itself: `getTeamName()`,
 the student himself/herself). For a free student these return `null`, `null`
 and an empty list.
 
+## Architecture
+
+Two levels of aggregation and a three-level inheritance chain: `root` is the
+aggregator and top parent, `core` aggregates and parents the two
+implementation modules, and `app` packs everything into the runnable
+`workshop-cli.jar`.
+
+```mermaid
+flowchart TD
+    subgraph root["root - workshop-registration (aggregator + parent)"]
+        subgraph core["core (aggregator + parent)"]
+            MI["model-impl<br/>model classes"]
+            LI["logic-impl<br/>WorkshopSystemImpl + managers"]
+        end
+        APP["app<br/>Main + uber jar workshop-cli.jar"]
+    end
+
+    MODEL_API(["model 2.0 (given API)"])
+    LOGIC_API(["logic 2.0 (given API)"])
+    TESTER(["workshop-tester 2.0 (given)"])
+
+    MI --> MODEL_API
+    LI --> MI
+    LI --> MODEL_API
+    LI --> LOGIC_API
+    APP --> LI
+    APP -. "test scope (verify phase)" .-> TESTER
+```
+
+Third-party libraries, each declared once in the root `dependencyManagement`:
+
+```mermaid
+flowchart LR
+    LI["logic-impl"]
+    APP["app"]
+
+    CV(["commons-validator<br/>e-mail validation"])
+    L4JAPI(["log4j-api<br/>logging calls"])
+    JACKSON(["jackson-databind<br/>JSON export"])
+    CSV(["commons-csv<br/>CSV import (bonus)"])
+    L4JCORE(["log4j-core<br/>runtime only + log4j2.xml"])
+
+    LI --> CV
+    LI --> L4JAPI
+    LI --> JACKSON
+    LI --> CSV
+    APP --> L4JCORE
+```
+
 ## Structure
 
 | Module | Content |
