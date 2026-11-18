@@ -21,6 +21,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <api.version>2.0</api.version>
         <tester.version>2.0</tester.version>
+        <commons-validator.version>1.11.0</commons-validator.version>
     </properties>
 
     <dependencyManagement>
@@ -40,6 +41,13 @@
                 <groupId>patmal.workshops</groupId>
                 <artifactId>workshop-tester</artifactId>
                 <version>${tester.version}</version>
+            </dependency>
+
+            <!-- Third-party libraries -->
+            <dependency>
+                <groupId>commons-validator</groupId>
+                <artifactId>commons-validator</artifactId>
+                <version>${commons-validator.version}</version>
             </dependency>
 
             <!-- Our own modules -->

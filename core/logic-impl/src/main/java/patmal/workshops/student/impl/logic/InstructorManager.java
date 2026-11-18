@@ -16,6 +16,7 @@ class InstructorManager {
     private final Map<String, InstructorImpl> instructors = new LinkedHashMap<>();
 
     Instructor create(String id, String name, String email) {
+        Emails.requireValid(email);
         if (instructors.containsKey(id)) {
             throw new IllegalArgumentException("An instructor with id '" + id + "' already exists");
         }

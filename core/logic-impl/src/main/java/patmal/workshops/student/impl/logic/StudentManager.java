@@ -17,6 +17,7 @@ class StudentManager {
     private final Map<String, StudentImpl> students = new LinkedHashMap<>();
 
     Student create(String id, String name, String email) {
+        Emails.requireValid(email);
         if (students.containsKey(id)) {
             throw new IllegalArgumentException("A student with id '" + id + "' already exists");
         }
