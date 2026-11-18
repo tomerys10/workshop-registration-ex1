@@ -19,7 +19,42 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <api.version>2.0</api.version>
+        <tester.version>2.0</tester.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Given API jars (installed manually into the local repository, see README) -->
+            <dependency>
+                <groupId>patmal.workshops</groupId>
+                <artifactId>model</artifactId>
+                <version>${api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>patmal.workshops</groupId>
+                <artifactId>logic</artifactId>
+                <version>${api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>patmal.workshops</groupId>
+                <artifactId>workshop-tester</artifactId>
+                <version>${tester.version}</version>
+            </dependency>
+
+            <!-- Our own modules -->
+            <dependency>
+                <groupId>patmal.workshops.student.impl</groupId>
+                <artifactId>model-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>patmal.workshops.student.impl</groupId>
+                <artifactId>logic-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <pluginManagement>

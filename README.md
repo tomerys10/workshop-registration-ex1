@@ -1,4 +1,26 @@
-# Workshop Registration System (EX1 - Vanilla)
+# Workshop Registration System
+
+## Building with Maven (EX2)
+
+The project is a multi-module Maven build. The given API jars are **not** on
+Maven Central, so before the first build on a new computer they must be
+installed into the local repository (`~/.m2`), once, with the commands below
+(run from the folder holding the jars):
+
+```
+mvn install:install-file -Dfile=model-2.0.jar -DgroupId=patmal.workshops -DartifactId=model -Dversion=2.0 -Dpackaging=jar
+mvn install:install-file -Dfile=logic-2.0.jar -DgroupId=patmal.workshops -DartifactId=logic -Dversion=2.0 -Dpackaging=jar
+mvn install:install-file -Dfile=workshop-tester-2.0.jar -DgroupId=patmal.workshops -DartifactId=workshop-tester -Dversion=2.0 -Dpackaging=jar
+```
+
+> In PowerShell, wrap each `-D...` argument in quotes, for example
+> `"-DgroupId=patmal.workshops"`, otherwise PowerShell splits it at the dot.
+
+Then, from the root of the repository:
+
+```
+mvn clean install
+```
 
 An in-memory implementation of the workshop registration API: instructors,
 workshops, students and the teams students form to take part in a workshop.
