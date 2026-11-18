@@ -17,5 +17,10 @@
             <groupId>patmal.workshops</groupId>
             <artifactId>model</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
