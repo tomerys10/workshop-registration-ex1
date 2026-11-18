@@ -1,5 +1,7 @@
 package patmal.workshops.student.impl.logic;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import patmal.workshops.api.model.Student;
 import patmal.workshops.api.model.Team;
 import patmal.workshops.api.model.Workshop;
@@ -21,6 +23,8 @@ import java.util.Set;
  */
 class TeamManager {
 
+    private static final Logger log = LogManager.getLogger(TeamManager.class);
+
     private final Map<Integer, TeamImpl> teams = new LinkedHashMap<>();
     private final StudentManager studentManager;
     private int nextTeamId = 1;
@@ -34,15 +38,18 @@ class TeamManager {
         List<StudentImpl> resolved = new ArrayList<>();
         for (String memberId : members) {
             if (!seen.add(memberId)) {
+                log.warn("Rejected team '{}': student '{}' listed more than once", name, memberId);
                 throw new IllegalArgumentException(
                         "Student '" + memberId + "' is listed more than once");
             }
             StudentImpl student = studentManager.byId(memberId);
             if (student == null) {
+                log.warn("Rejected team '{}': student '{}' does not exist", name, memberId);
                 throw new IllegalArgumentException(
                         "Student '" + memberId + "' does not exist");
             }
             if (student.getTeam() != null) {
+                log.warn("Rejected team '{}': student '{}' already in a team", name, memberId);
                 throw new IllegalArgumentException(
                         "Student '" + memberId + "' is already in team '"
                                 + student.getTeam().getName() + "'");
@@ -57,6 +64,7 @@ class TeamManager {
         }
         teams.put(nextTeamId, team);
         nextTeamId++;
+        log.info("Created team {} ('{}') with {} students", team.getId(), name, resolved.size());
         return team;
     }
 

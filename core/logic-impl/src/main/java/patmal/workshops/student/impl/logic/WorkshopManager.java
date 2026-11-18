@@ -1,5 +1,7 @@
 package patmal.workshops.student.impl.logic;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import patmal.workshops.api.model.Instructor;
 import patmal.workshops.api.model.Workshop;
 import patmal.workshops.student.impl.model.InstructorImpl;
@@ -16,6 +18,8 @@ import java.util.Map;
  */
 class WorkshopManager {
 
+    private static final Logger log = LogManager.getLogger(WorkshopManager.class);
+
     private final Map<Integer, WorkshopImpl> workshops = new LinkedHashMap<>();
     private int nextWorkshopId = 1;
 
@@ -23,6 +27,7 @@ class WorkshopManager {
         WorkshopImpl workshop = new WorkshopImpl(nextWorkshopId, name, description);
         workshops.put(nextWorkshopId, workshop);
         nextWorkshopId++;
+        log.info("Created workshop {} ('{}')", workshop.getId(), name);
         return workshop;
     }
 
@@ -44,5 +49,6 @@ class WorkshopManager {
         }
         workshopImpl.setInstructor(instructorImpl);
         instructorImpl.addWorkshop(workshopImpl);
+        log.info("Associated workshop {} with instructor '{}'", workshopImpl.getId(), instructorImpl.getId());
     }
 }
