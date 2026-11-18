@@ -20,6 +20,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     private final StudentManager studentManager = new StudentManager();
     private final WorkshopManager workshopManager = new WorkshopManager();
     private final TeamManager teamManager = new TeamManager(studentManager);
+    private final JsonExporter jsonExporter = new JsonExporter(instructorManager, studentManager, teamManager);
 
     public WorkshopSystemImpl() {
     }
@@ -106,16 +107,16 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public void exportInstructorsDataToJson(File targetFileName) {
-        throw new UnsupportedOperationException("JSON export is implemented in a later commit");
+        jsonExporter.exportInstructors(targetFileName);
     }
 
     @Override
     public void exportStudentsDataToJson(File targetFileName) {
-        throw new UnsupportedOperationException("JSON export is implemented in a later commit");
+        jsonExporter.exportStudents(targetFileName);
     }
 
     @Override
     public void exportTeamsDataToJson(File targetFileName) {
-        throw new UnsupportedOperationException("JSON export is implemented in a later commit");
+        jsonExporter.exportTeams(targetFileName);
     }
 }
