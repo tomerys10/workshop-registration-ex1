@@ -158,8 +158,7 @@ no-argument constructor, so it can still be found and created automatically,
 and it delegates every call to the class that owns that area.
 `InstructorManager`, `StudentManager`, `WorkshopManager` and `TeamManager`
 each hold their own objects and rules, while `JsonExporter` and `CsvImporter`
-handle the file formats. This is the same layering that later stages of the
-project build on.
+handle the file formats.
 
 ### New capabilities and the libraries behind them
 
@@ -322,10 +321,3 @@ java -cp "workshop-tester-2.0.jar;workshop-cli.jar" patmal.workshops.main.Main
 
 All packages start with `patmal.workshops.student.impl`. The given interfaces
 are used exactly as provided and are never modified.
-
-## What comes next
-
-The same project continues through the next exercises: first to Spring, then
-to Spring Boot as a server that is used over HTTP, and finally to a database.
-The module structure and the manager layer built here are the foundation for
-those steps.
